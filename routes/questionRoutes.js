@@ -13,11 +13,13 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Get all questions
+// Get all questions with optional filtering
 router.get("/", async (req, res) => {
     try {
-        // Call the getRecords function directly, without pagination
-        const records = await getRecords();
+        const { assignedTo, propertyKey, propertyValue } = req.query;
+
+        // Pass filters to the getRecords function
+        const records = await getRecords({ assignedTo, propertyKey, propertyValue });
 
         res.status(200).json({
             records,
@@ -26,7 +28,7 @@ router.get("/", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             error: "Failed to fetch records",
-            details: error.message
+            details: error.message,
         });
     }
 });

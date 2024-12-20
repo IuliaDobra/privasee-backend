@@ -23,14 +23,30 @@ const generateRecordId = () => {
 };
 
 // Fetch all records
-const getRecords = async () => {
+const getRecords = async (filters = {}) => {
     let allRecords = [];
     let offset = null;
 
     try {
+        // Build Airtable filterByFormula based on the filters provided
+        let filterByFormula = "";
+
+        if (filters.assignedTo) {
+            filterByFormula += `AND({assigned_to} = '${filters.assignedTo}')`;
+        }
+
+        if (filters.propertyKey && filters.propertyValue) {
+            // Add a condition to search for the key:value pair in the properties column
+            const propertyCondition = `SEARCH('${filters.propertyKey}:${filters.propertyValue}', {properties})`;
+            filterByFormula = filterByFormula
+                ? `AND(${filterByFormula}, ${propertyCondition})`
+                : propertyCondition;
+        }
+
         do {
             const params = {
                 sort: [{ field: "updated_at", direction: "desc" }], // Sort by 'updated_at' descending
+                filterByFormula: filterByFormula || undefined, // Apply the filter only if it's non-empty
             };
             if (offset) params.offset = offset; // Add offset to fetch the next page
 
@@ -56,6 +72,7 @@ const getRecords = async () => {
         throw new Error("Failed to fetch records");
     }
 };
+
 
 // Create a new record
 const createRecord = async (data) => {

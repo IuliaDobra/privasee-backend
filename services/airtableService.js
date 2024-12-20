@@ -1,4 +1,5 @@
 const axios = require("axios");
+const Fuse = require("fuse.js");
 require("dotenv").config();
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -32,15 +33,7 @@ const getRecords = async (filters = {}) => {
         let filterByFormula = "";
 
         if (filters.assignedTo) {
-            filterByFormula += `AND({assigned_to} = '${filters.assignedTo}')`;
-        }
-
-        if (filters.propertyKey && filters.propertyValue) {
-            // Add a condition to search for the key:value pair in the properties column
-            const propertyCondition = `SEARCH('${filters.propertyKey}:${filters.propertyValue}', {properties})`;
-            filterByFormula = filterByFormula
-                ? `AND(${filterByFormula}, ${propertyCondition})`
-                : propertyCondition;
+            filterByFormula = `AND({assigned_to} = '${filters.assignedTo}')`;
         }
 
         do {
@@ -233,6 +226,33 @@ const bulkReassignRecords = async (ids, assigned_to, updated_by) => {
     }
 };
 
+// Search on question and answer columns
+const searchQuestionAnswer = async (searchTerm) => {
+    const records = await getRecords();
+    const fuse = new Fuse(records, {
+        keys: ["question", "answer"],
+        includeScore: true,
+        threshold: 0.3,
+        ignoreLocation: true,
+    });
+
+    return fuse.search(searchTerm).map((result) => result.item);
+};
+
+// Search on the properties column
+const searchProperties = async (propertyKey, propertyValue) => {
+    const records = await getRecords();
+    const searchString = `${propertyKey}:${propertyValue}`;
+    const fuse = new Fuse(records, {
+        keys: ["properties"],
+        includeScore: true,
+        threshold: 0.3,
+        ignoreLocation: true,
+    });
+
+    return fuse.search(searchString).map((result) => result.item);
+};
+
 
 module.exports = {
     getRecords,
@@ -241,5 +261,7 @@ module.exports = {
     deleteRecord,
     getUsers,
     getCompanyNameAndId,
-    bulkReassignRecords
+    bulkReassignRecords,
+    searchQuestionAnswer,
+    searchProperties
 };

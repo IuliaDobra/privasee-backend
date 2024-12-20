@@ -232,7 +232,7 @@ const searchQuestionAnswer = async (searchTerm) => {
     const fuse = new Fuse(records, {
         keys: ["question", "answer"],
         includeScore: true,
-        threshold: 0.6,
+        threshold: 0.5,
         ignoreLocation: true,
     });
 
@@ -246,7 +246,7 @@ const searchProperties = async (propertyKey, propertyValue) => {
     const fuse = new Fuse(records, {
         keys: ["properties"],
         includeScore: true,
-        threshold: 0.6,
+        threshold: 0.5,
         ignoreLocation: true,
     });
 

@@ -1,6 +1,6 @@
 To run the project
 
-nodemon index.js
+npm start
 
 the backend will start on localhost:3001
 

@@ -11,3 +11,4 @@ yarn-error.log*
 # Build and cache files
 dist/
 .cache/
+package-lock.json
